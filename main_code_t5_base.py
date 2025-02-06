@@ -1,4 +1,4 @@
-import wandb, os
+import wandb, huggingface_hub, os
 import evaluate
 
 from transformers import TrainingArguments, Trainer, T5ForConditionalGeneration
@@ -7,11 +7,12 @@ from dataset_preparing import prepare_dataset
 from constants import *
 
 # [PREPARING DATASET AND FUNCTIONS]
-# Login wandb
+# Login wandb & huggingface
 wandb.login(key=os.getenv("WANDB_API_KEY"))
+huggingface_hub.login(token=os.getenv("HUGGINGFACE_TOKEN"))
 
 # Prepare the dataset and tokenizer
-train_dataset, val_dataset, tokenizer = prepare_dataset()
+train_dataset, val_dataset, test_dataset, tokenizer = prepare_dataset()
 
 # Define compute_metrics function
 metric = evaluate.load("bleu")
@@ -29,10 +30,11 @@ def compute_metrics(eval_pred):
     return bleu_score
 
 
-# [SET UP MODEL AND TRAINING ARGUMENTS]
+# [SETTING UP MODEL AND TRAINING ARGUMENTS]
 # Set experiment name
 EXPERIMENT_NAME = "experiment-0"
 EXPERIMENT_RESULTS_DIR = RESULTS_CS_DIR_CT5B + EXPERIMENT_NAME
+os.makedirs(EXPERIMENT_RESULTS_DIR, exist_ok=True)
 
 # Load model
 def get_last_checkpoint(output_dir):
@@ -42,7 +44,6 @@ def get_last_checkpoint(output_dir):
         return os.path.join(output_dir, last_checkpoint)
     return None
 
-os.makedirs(EXPERIMENT_RESULTS_DIR, exist_ok=True)
 checkpoint = get_last_checkpoint(EXPERIMENT_RESULTS_DIR)
 if checkpoint:
     model = T5ForConditionalGeneration.from_pretrained(checkpoint)
@@ -88,7 +89,27 @@ if checkpoint:
 else:
     trainer.train()
 
+# [EVALUATING]
+test_results = trainer.evaluate(test_dataset)
 
-# [SAVE MODEL]
-model.save_pretrained('./results/code-summarization/code-t5-small')
-tokenizer.save_pretrained('./results/code-summarization/code-t5-small')
+# [SAVING THINGS]
+# Save the model and tokenizer
+model.save_pretrained(EXPERIMENT_RESULTS_DIR)
+tokenizer.save_pretrained(EXPERIMENT_RESULTS_DIR)
+
+# Save the training arguments
+with open(EXPERIMENT_RESULTS_DIR + "/training_args.txt", "w") as f:
+    f.write(str(training_args))
+
+# Save the test results
+with open(EXPERIMENT_RESULTS_DIR + "/test_results.txt", "w") as f:
+    f.write(str(test_results))
+
+# Upload to HuggingFace
+api = huggingface_hub.HfApi()
+api.upload_large_folder(
+    folder_path=RESULTS_DIR,
+    repo_id="auphong2707/dl4se-code-review",
+    repo_type="model",
+    private=True
+)
