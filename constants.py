@@ -4,6 +4,7 @@ This file contains all the constants used in the project.
 
 RESULTS_DIR = "./results/"
 LOGGING_STEPS = 100
+SEED = 42
 
 # [I - CODE SUMMARIZATION]
 RESULTS_CS_DIR = RESULTS_DIR + "code-summarization/"
@@ -19,7 +20,7 @@ RESULTS_CS_DIR_CT5B = RESULTS_CS_DIR + "code-t5-base/"
 LR_CS_CT5B = 3e-5
 TRAIN_BATCH_SIZE_CS_CT5B = 16
 EVAL_BATCH_SIZE_CS_CT5B = 16
-NUM_TRAIN_EPOCHS_CS_CT5B = 3
+NUM_TRAIN_EPOCHS_CS_CT5B = 2
 WEIGHT_DECAY_CS_CT5B = 0.01
 EAS_CS_CT5B = 64
 TEC_CS_CT5B = 32

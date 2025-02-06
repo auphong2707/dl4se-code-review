@@ -1,10 +1,13 @@
+from constants import *
+from helper import set_seed
+set_seed(SEED)
+
 import wandb, huggingface_hub, os
 import evaluate
 
 from transformers import TrainingArguments, Trainer, T5ForConditionalGeneration
 
 from dataset_preparing import prepare_dataset
-from constants import *
 
 # [PREPARING DATASET AND FUNCTIONS]
 # Login wandb & huggingface
@@ -73,7 +76,8 @@ training_args = TrainingArguments(
     logging_steps=LOGGING_STEPS,
     load_best_model_at_end=True,
     save_total_limit=2,
-    fp16=True
+    fp16=True,
+    seed=SEED
 )
 
 # Create Trainer
@@ -92,10 +96,8 @@ if checkpoint:
 else:
     trainer.train()
 
-wandb.finish()
-
 # [EVALUATING]
-test_results = trainer.evaluate(test_dataset)
+test_results = trainer.evaluate(test_dataset, metric_key_prefix="test")
 
 # [SAVING THINGS]
 # Save the model and tokenizer
