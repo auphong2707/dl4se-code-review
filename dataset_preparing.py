@@ -15,8 +15,10 @@ from transformers import RobertaTokenizer
 from datasets import Dataset
 from huggingface_hub import snapshot_download, login
 
+from constants import TOKENIZER_CS_CT5B, CS_INPUT_MAX_LENGTH, CS_OUTPUT_MAX_LENGTH
+
 # Load the RoBERTa tokenizer
-tokenizer = RobertaTokenizer.from_pretrained("Salesforce/codet5-base")
+tokenizer = RobertaTokenizer.from_pretrained(TOKENIZER_CS_CT5B)
 
 
 def load_jsonl(file_path):
@@ -68,8 +70,8 @@ def tokenize_data(data_point):
     input_text, target_summary = preprocess_data(data_point)
 
     # Tokenize input code and output summary
-    model_inputs = tokenizer(input_text, max_length=200, truncation=True, padding='max_length')
-    labels = tokenizer(target_summary, max_length=100, truncation=True, padding='max_length')
+    model_inputs = tokenizer(input_text, max_length=CS_INPUT_MAX_LENGTH, truncation=True, padding='max_length')
+    labels = tokenizer(target_summary, max_length=CS_OUTPUT_MAX_LENGTH, truncation=True, padding='max_length')
 
     # Add labels
     model_inputs['labels'] = labels['input_ids']
