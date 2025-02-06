@@ -1,3 +1,13 @@
+"""
+This script prepares the dataset for training the CodeT5 model.
+It loads the dataset, preprocesses the data, and tokenizes the data for training.
+
+Example input-output pair:
+ - input_text = "Summarize code: def add(a, b): return a + b TL;DR:"
+ - output_text = "Add two numbers"
+"""
+
+# Import the necessary libraries
 import os
 import json
 
@@ -5,17 +15,34 @@ from transformers import RobertaTokenizer
 from datasets import Dataset
 from huggingface_hub import snapshot_download, login
 
+# Load the RoBERTa tokenizer
 tokenizer = RobertaTokenizer.from_pretrained("Salesforce/codet5-base")
 
-# Example input-output pair
-# input_text = "Summarize: ~Code~"
-# output_text = "Sumarized Content"
 
 def load_jsonl(file_path):
+    """
+    Load a JSONL (JSON Lines) file and return its contents as a list of dictionaries.
+
+    Args:
+        file_path (str): The path to the JSONL file to be loaded.
+
+    Returns:
+        list: A list of dictionaries, each representing a JSON object from a line in the file.
+    """
     with open(file_path, 'r') as file:
         return [json.loads(line) for line in file]
 
+
 def preprocess_data(data_point):
+    """
+    Preprocess a data point by converting code and docstring tokens into strings and formatting them for the CodeT5 model.
+
+    Args:
+        data_point (dict): A dictionary containing 'code_tokens' and 'docstring_tokens'.
+
+    Returns:
+        tuple: A tuple containing the formatted input text and the target summary text.
+    """
     # Convert code tokens into a string (space-separated)
     code_text = " ".join(data_point['code_tokens'])
 
@@ -27,7 +54,17 @@ def preprocess_data(data_point):
 
     return input_text, docstring_text
 
+
 def tokenize_data(data_point):
+    """
+    Tokenizes the input data point into model inputs and labels.
+
+    Args:
+        data_point (tuple): A tuple containing the input text and target summary.
+
+    Returns:
+        dict: A dictionary containing tokenized input text and labels with padding and truncation applied.
+    """
     input_text, target_summary = preprocess_data(data_point)
 
     # Tokenize input code and output summary
@@ -41,6 +78,18 @@ def tokenize_data(data_point):
 
 
 def prepare_dataset():
+    """
+    Prepares the dataset for training and validation.
+
+    This function performs the following steps:
+    1. Downloads the dataset from the Hugging Face repository.
+    2. Loads the training and validation data from JSONL files.
+    3. Converts the loaded data into Dataset objects.
+    4. Tokenizes the data using a specified tokenizer.
+
+    Returns:
+        tuple: A tuple containing the tokenized training dataset, validation dataset, and the tokenizer.
+    """
     # Download the dataset
     login(token=os.getenv("HUGGINGFACE_TOKEN"))
     snapshot_download(repo_id="auphong2707/dl4se-code-review-dataset", 
@@ -62,6 +111,7 @@ def prepare_dataset():
     val_dataset = val_dataset.map(tokenize_data, batched=False, remove_columns=val_dataset.column_names)
 
     return train_dataset, val_dataset, tokenizer
+
 
 if __name__ == "__main__":
     train_dataset, val_dataset, tokenizer = prepare_dataset()
