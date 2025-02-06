@@ -89,6 +89,8 @@ if checkpoint:
 else:
     trainer.train()
 
+wandb.finish()
+
 # [EVALUATING]
 test_results = trainer.evaluate(test_dataset)
 
