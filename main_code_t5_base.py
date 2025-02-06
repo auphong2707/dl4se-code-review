@@ -25,7 +25,10 @@ def compute_metrics(eval_pred):
     decoded_labels = tokenizer.batch_decode(labels, skip_special_tokens=True)
 
     # Calculate BLEU score
-    bleu_score = metric.compute(predictions=decoded_preds, references=[[label] for label in decoded_labels])
+    bleu_score = metric.compute(predictions=decoded_preds, 
+                                references=[[label] for label in decoded_labels],
+                                max_order=4
+                            )
 
     return bleu_score
 
