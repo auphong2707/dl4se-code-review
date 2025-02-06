@@ -14,6 +14,7 @@ import json
 from transformers import RobertaTokenizer
 from datasets import Dataset
 from huggingface_hub import snapshot_download, login
+from typing import Tuple
 
 from constants import TOKENIZER_CS_CT5B, CS_INPUT_MAX_LENGTH, CS_OUTPUT_MAX_LENGTH
 
@@ -21,7 +22,7 @@ from constants import TOKENIZER_CS_CT5B, CS_INPUT_MAX_LENGTH, CS_OUTPUT_MAX_LENG
 tokenizer = RobertaTokenizer.from_pretrained(TOKENIZER_CS_CT5B)
 
 
-def load_jsonl(file_path):
+def load_jsonl(file_path) -> list:
     """
     Load a JSONL (JSON Lines) file and return its contents as a list of dictionaries.
 
@@ -35,7 +36,7 @@ def load_jsonl(file_path):
         return [json.loads(line) for line in file]
 
 
-def preprocess_data(data_point):
+def preprocess_data(data_point) -> Tuple[str, str]:
     """
     Preprocess a data point by converting code and docstring tokens into strings and formatting them for the CodeT5 model.
 
@@ -57,7 +58,7 @@ def preprocess_data(data_point):
     return input_text, docstring_text
 
 
-def tokenize_data(data_point):
+def tokenize_data(data_point) -> dict:
     """
     Tokenizes the input data point into model inputs and labels.
 
@@ -79,7 +80,7 @@ def tokenize_data(data_point):
     return model_inputs
 
 
-def prepare_dataset():
+def prepare_dataset() -> Tuple[Dataset, Dataset, Dataset, RobertaTokenizer]:
     """
     Prepares the dataset for training and validation.
 
@@ -103,19 +104,23 @@ def prepare_dataset():
     # Load data
     train_data = load_jsonl('data/Review-Comment-Generation/trans_data/train.jsonl')
     val_data = load_jsonl('data/Review-Comment-Generation/trans_data/val.jsonl')
+    test_data = load_jsonl('data/Review-Comment-Generation/trans_data/test.jsonl')
 
     # Convert data into a Dataset object
     train_dataset = Dataset.from_list(train_data)
     val_dataset = Dataset.from_list(val_data)
+    test_dataset = Dataset.from_list(test_data)
 
     # Tokenize the data
     train_dataset = train_dataset.map(tokenize_data, batched=False, remove_columns=train_dataset.column_names)
     val_dataset = val_dataset.map(tokenize_data, batched=False, remove_columns=val_dataset.column_names)
+    test_dataset = test_dataset.map(tokenize_data, batched=False, remove_columns=test_dataset.column_names)
 
-    return train_dataset, val_dataset, tokenizer
+    return train_dataset, val_dataset, test_dataset, tokenizer
 
 
 if __name__ == "__main__":
-    train_dataset, val_dataset, tokenizer = prepare_dataset()
-    print(train_dataset[0])
-    print(val_dataset[0])
+    train_dataset, val_dataset, test_dataset, tokenizer = prepare_dataset()
+    print("Train example\n", train_dataset[0])
+    print("Validation example \n", val_dataset[0])
+    print("Test example \n", test_dataset[0])
