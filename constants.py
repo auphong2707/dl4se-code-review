@@ -3,7 +3,7 @@ This file contains all the constants used in the project.
 """
 
 RESULTS_DIR = "./results/"
-LOGGING_STEPS = 100
+LOGGING_STEPS = 86
 SEED = 42
 
 # [I - CODE SUMMARIZATION]
