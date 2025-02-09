@@ -77,7 +77,7 @@ training_args = TrainingArguments(
     load_best_model_at_end=True,
     metric_for_best_model="eval_bleu",
     greater_is_better=True,
-    save_total_limit=2,
+    save_total_limit=1,
     fp16=True,
     seed=SEED
 )
