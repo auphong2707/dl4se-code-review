@@ -18,7 +18,8 @@ from typing import Tuple
 
 from constants import CS_INPUT_MAX_LENGTH, CS_OUTPUT_MAX_LENGTH
 
-tokenizer = None
+TOKENIZER = None
+PRESUFFIX = False
 
 
 def load_jsonl(file_path) -> list:
@@ -51,8 +52,10 @@ def preprocess_data(data_point) -> Tuple[str, str]:
     # Convert docstring tokens into a string (space-separated)
     docstring_text = " ".join(data_point['docstring_tokens'])
 
-    # Add task prefix for CodeT5
-    input_text = f"Summarize code: {code_text} TL;DR:"
+    if PRESUFFIX:
+        input_text = f"Summarize code: {code_text} TL;DR:"
+    else:
+        input_text = code_text
 
     return input_text, docstring_text
 
@@ -70,8 +73,8 @@ def tokenize_data(data_point) -> dict:
     input_text, target_summary = preprocess_data(data_point)
 
     # Tokenize input code and output summary
-    model_inputs = tokenizer(input_text, max_length=CS_INPUT_MAX_LENGTH, truncation=True, padding='max_length')
-    labels = tokenizer(target_summary, max_length=CS_OUTPUT_MAX_LENGTH, truncation=True, padding='max_length')
+    model_inputs = TOKENIZER(input_text, max_length=CS_INPUT_MAX_LENGTH, truncation=True, padding='max_length')
+    labels = TOKENIZER(target_summary, max_length=CS_OUTPUT_MAX_LENGTH, truncation=True, padding='max_length')
 
     # Add labels
     model_inputs['labels'] = labels['input_ids']
@@ -79,7 +82,7 @@ def tokenize_data(data_point) -> dict:
     return model_inputs
 
 
-def prepare_dataset(tokenizer_name) -> Tuple[Dataset, Dataset, Dataset, AutoTokenizer]:
+def prepare_dataset(tokenizer_name, presufix=True) -> Tuple[Dataset, Dataset, Dataset, AutoTokenizer]:
     """
     Prepares the dataset for training and validation.
 
@@ -93,8 +96,12 @@ def prepare_dataset(tokenizer_name) -> Tuple[Dataset, Dataset, Dataset, AutoToke
         tuple: A tuple containing the tokenized training dataset, validation dataset, and the tokenizer.
     """
     # Load the tokenizer
-    global tokenizer
-    tokenizer = AutoTokenizer.from_pretrained(tokenizer_name)
+    global TOKENIZER
+    TOKENIZER = AutoTokenizer.from_pretrained(tokenizer_name)
+
+    # Set the global variable for prefix/suffix
+    global PRESUFFIX
+    PRESUFFIX = presufix
 
     # Download the dataset
     login(token=os.getenv("HUGGINGFACE_TOKEN"))
@@ -119,11 +126,11 @@ def prepare_dataset(tokenizer_name) -> Tuple[Dataset, Dataset, Dataset, AutoToke
     val_dataset = val_dataset.map(tokenize_data, batched=False, remove_columns=val_dataset.column_names)
     test_dataset = test_dataset.map(tokenize_data, batched=False, remove_columns=test_dataset.column_names)
 
-    return train_dataset, val_dataset, test_dataset, tokenizer
+    return train_dataset, val_dataset, test_dataset, TOKENIZER
 
 
 if __name__ == "__main__":
-    train_dataset, val_dataset, test_dataset, tokenizer = prepare_dataset()
+    train_dataset, val_dataset, test_dataset, TOKENIZER = prepare_dataset()
     print("Train example\n", train_dataset[0])
     print("Validation example \n", val_dataset[0])
     print("Test example \n", test_dataset[0])
