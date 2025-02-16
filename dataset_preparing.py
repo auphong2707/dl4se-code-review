@@ -11,15 +11,14 @@ Example input-output pair:
 import os
 import json
 
-from transformers import RobertaTokenizer
+from transformers import AutoTokenizer
 from datasets import Dataset
 from huggingface_hub import snapshot_download, login
 from typing import Tuple
 
-from constants import TOKENIZER_CS_CT5B, CS_INPUT_MAX_LENGTH, CS_OUTPUT_MAX_LENGTH
+from constants import CS_INPUT_MAX_LENGTH, CS_OUTPUT_MAX_LENGTH
 
-# Load the RoBERTa tokenizer
-tokenizer = RobertaTokenizer.from_pretrained(TOKENIZER_CS_CT5B)
+tokenizer = None
 
 
 def load_jsonl(file_path) -> list:
@@ -80,7 +79,7 @@ def tokenize_data(data_point) -> dict:
     return model_inputs
 
 
-def prepare_dataset() -> Tuple[Dataset, Dataset, Dataset, RobertaTokenizer]:
+def prepare_dataset(tokenizer_name) -> Tuple[Dataset, Dataset, Dataset, AutoTokenizer]:
     """
     Prepares the dataset for training and validation.
 
@@ -93,6 +92,10 @@ def prepare_dataset() -> Tuple[Dataset, Dataset, Dataset, RobertaTokenizer]:
     Returns:
         tuple: A tuple containing the tokenized training dataset, validation dataset, and the tokenizer.
     """
+    # Load the tokenizer
+    global tokenizer
+    tokenizer = AutoTokenizer.from_pretrained(tokenizer_name)
+
     # Download the dataset
     login(token=os.getenv("HUGGINGFACE_TOKEN"))
     snapshot_download(repo_id="auphong2707/dl4se-code-review-dataset", 

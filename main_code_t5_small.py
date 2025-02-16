@@ -15,7 +15,7 @@ wandb.login(key=os.getenv("WANDB_API_KEY"))
 huggingface_hub.login(token=os.getenv("HUGGINGFACE_TOKEN"))
 
 # Prepare the dataset and tokenizer
-train_dataset, val_dataset, test_dataset, tokenizer = prepare_dataset()
+train_dataset, val_dataset, test_dataset, tokenizer = prepare_dataset(TOKENIZER_CS_CT5B)
 
 # Define compute_metrics function
 metric = evaluate.load("bleu")
