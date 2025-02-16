@@ -15,7 +15,7 @@ wandb.login(key=os.getenv("WANDB_API_KEY"))
 huggingface_hub.login(token=os.getenv("HUGGINGFACE_TOKEN"))
 
 # Prepare the dataset and tokenizer
-train_dataset, val_dataset, test_dataset, tokenizer = prepare_dataset(TOKENIZER_CS_PLBART)
+train_dataset, val_dataset, test_dataset, tokenizer = prepare_dataset(TOKENIZER_CS_PLBARTB)
 
 # Define compute_metrics function
 metric = evaluate.load("bleu")
@@ -39,7 +39,7 @@ def compute_metrics(eval_pred):
 # [SETTING UP MODEL AND TRAINING ARGUMENTS]
 # Set experiment name
 EXPERIMENT_NAME = "experiment-1"
-EXPERIMENT_RESULTS_DIR = RESULTS_CS_DIR_PLBART + EXPERIMENT_NAME
+EXPERIMENT_RESULTS_DIR = RESULTS_CS_DIR_PLBARTB + EXPERIMENT_NAME
 os.makedirs(EXPERIMENT_RESULTS_DIR, exist_ok=True)
 
 # Load model
@@ -54,7 +54,7 @@ checkpoint = get_last_checkpoint(EXPERIMENT_RESULTS_DIR)
 if checkpoint:
     model = AutoModelForSeq2SeqLM.from_pretrained(checkpoint)
 else:
-    model = AutoModelForSeq2SeqLM.from_pretrained(MODEL_CS_PLBART)
+    model = AutoModelForSeq2SeqLM.from_pretrained(MODEL_CS_PLBARB)
     model.generation_config.max_length = CS_OUTPUT_MAX_LENGTH
     model.generation_config.num_beams = CS_NUM_BEAMS
 
@@ -64,13 +64,13 @@ training_args = TrainingArguments(
     report_to="wandb",
     eval_strategy='epoch',
     save_strategy='epoch',
-    learning_rate=LR_CS_PLBART,
-    per_device_train_batch_size=TRAIN_BATCH_SIZE_CS_PLBART,
-    per_device_eval_batch_size=EVAL_BATCH_SIZE_CS_PLBART,
-    num_train_epochs=NUM_TRAIN_EPOCHS_CS_PLBART,
-    weight_decay=WEIGHT_DECAY_CS_PLBART,
-    eval_accumulation_steps=EAS_CS_PLBART,
-    torch_empty_cache_steps=TEC_CS_PLBART,
+    learning_rate=LR_CS_PLBARTB,
+    per_device_train_batch_size=TRAIN_BATCH_SIZE_CS_PLBARTB,
+    per_device_eval_batch_size=EVAL_BATCH_SIZE_CS_PLBARTB,
+    num_train_epochs=NUM_TRAIN_EPOCHS_CS_PLBARTB,
+    weight_decay=WEIGHT_DECAY_CS_PLBARTB,
+    eval_accumulation_steps=EAS_CS_PLBARTB,
+    torch_empty_cache_steps=TEC_CS_PLBARTB,
     output_dir=EXPERIMENT_RESULTS_DIR,
     logging_dir=EXPERIMENT_RESULTS_DIR + "/logs",
     logging_steps=LOGGING_STEPS,
