@@ -4,8 +4,8 @@ import os
 from pathlib import Path
 
 repo_id = "auphong2707/dl4se-code-review"
-model_subdir = "code-summarization/code-t5-base/experiment-1"
-local_dir = "./my_model/code-t5-base/experiment-1"
+model_subdir = "code-summarization/plbart/experiment-3"
+local_dir = "./my_model/plbart-base/experiment-3"
 temp_dir = "./temp_hf_download"
 
 # Download the model from the repo

@@ -1,10 +1,10 @@
-from transformers import T5ForConditionalGeneration, RobertaTokenizer
+from transformers import AutoTokenizer, AutoModelForSeq2SeqLM
 
-local_model_path = "./my_model/code-t5-base/experiment-1"
+local_model_path = "./my_model/plbart-base/experiment-3"
 
 # Load the model and tokenizer
-tokenizer = RobertaTokenizer.from_pretrained(local_model_path)
-model = T5ForConditionalGeneration.from_pretrained(local_model_path)
+tokenizer = AutoTokenizer.from_pretrained(local_model_path)
+model = AutoModelForSeq2SeqLM.from_pretrained(local_model_path)
 
 code_snippet = """
     @Override 
@@ -32,7 +32,7 @@ code_snippet = """
     }
 """
 
-inputs = tokenizer.encode("Summarize: " + code_snippet, return_tensors="pt")
+inputs = tokenizer.encode(' '.join(["public", "void", "startRuntime()", "{", "String", "tempDir", "=", "AppConstants.getInstance().getString(\"log.dir\",", "null);", "v8", "=", "V8.createV8Runtime(\"J2V8Javascript\",", "tempDir);", "}"]), return_tensors="pt")
 
 # Generate the output
 outputs = model.generate(inputs, max_length=150, min_length=50, num_beams=50, early_stopping=True)
